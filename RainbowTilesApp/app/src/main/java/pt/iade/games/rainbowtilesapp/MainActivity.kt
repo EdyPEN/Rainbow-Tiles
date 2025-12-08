@@ -41,7 +41,7 @@ import pt.iade.games.rainbowtilesapp.ui.theme.RainbowTilesAppTheme
 import kotlin.random.Random
 var numberOfRows: Int = 20
 var numberOfButtons: Int = 4
-var rowHeight: Float = 135f
+var rowHeight: Float = 180f
 var padding: Float = 2f
 var rowsBeaten: Int = 0
 val blue: Int = 1
