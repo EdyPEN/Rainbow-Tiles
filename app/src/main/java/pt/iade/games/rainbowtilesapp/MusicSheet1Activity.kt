@@ -1,9 +1,8 @@
 package pt.iade.games.rainbowtilesapp
 
-import android.R
 import android.content.Context
+import java.io.IOException
 import android.os.Bundle
-import android.util.DisplayMetrics
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -30,21 +29,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import pt.iade.games.rainbowtilesapp.ui.theme.RainbowTilesAppTheme
 import kotlin.random.Random
-var numberOfRows: Int = 20
+
+var numberOfRows: Int = 45
 var numberOfButtons: Int = 4
-var rowHeight: Float = 171f
-var padding: Float = 0f
+var rowHeight: Float = 180f
+var padding: Float = 2f
 var buttonWidth: Float = 100f
 const val startingTime = 6
 const val blue: Int = 1
@@ -52,13 +50,85 @@ const val green: Int = 2
 const val yellow: Int = 3
 const val red: Int = 4
 const val cyan: Int = 5
+
+enum class MusicSheet(val fileName: String) {
+    SHEET1("sheet1.txt"),
+    SHEET2("sheet2.txt")
+}
+fun loadPatternFromAssets(
+    context: Context,
+    fileName: String,
+    numberOfButtons: Int
+): List<Int> {
+    val pattern = mutableListOf<Int>()
+
+    try {
+        // Read entire file as text
+        val text = context.assets.open(fileName)
+            .bufferedReader()
+            .use { it.readText() }
+
+        // Split by lines, remove empty lines
+        val lines = text
+            .lines()
+            .filter { it.isNotBlank() }
+
+        for (line in lines) {
+            // Safety: line must have exactly numberOfButtons characters
+            if (line.length != numberOfButtons) {
+                // Skip incorrect lines
+                continue
+            }
+
+            // Find index of 'O' (active tile) in this line
+            val index = line.indexOf('O')
+
+            if (index == -1) {
+                // No 'O' in this line -> skip or handle error
+                continue
+            } else {
+                // index is 0-based, we need 1..numberOfButtons
+                val columnNumber = index + 1
+                pattern.add(columnNumber)
+            }
+        }
+    } catch (e: IOException) {
+        // File not found or read error
+        e.printStackTrace()
+    }
+
+    return pattern
+}
 class MainActivity : ComponentActivity() {
+    // A single place where we put the constant
+    companion object {
+        const val EXTRA_SHEET_NAME = "EXTRA_SHEET_NAME"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Read sheet name from Intent
+        val sheetName = intent.getStringExtra(EXTRA_SHEET_NAME)
+
+        // Convert String to enum (default is SHEET1)
+        val sheet = when (sheetName) {
+            "SHEET2" -> MusicSheet.SHEET2
+            // "SHEET3" -> MusicSheet.SHEET3
+            else -> MusicSheet.SHEET1
+        }
+
+        // Load pattern for this sheet
+        val pattern = loadPatternFromAssets(
+            context = this,
+            fileName = sheet.fileName,
+            numberOfButtons = numberOfButtons
+        )
+
         enableEdgeToEdge()
         setContent {
             RainbowTilesAppTheme {
-                MainView()
+                MainView(pattern = pattern)
             }
         }
     }
@@ -70,7 +140,7 @@ fun getScreenHeight(context: Context): Float {
 }
 
 @Composable
-fun MainView() {
+fun MainView(pattern: List<Int>) {
     val context = LocalContext.current
     val displayHeight = getScreenHeight(context)
 
@@ -100,6 +170,10 @@ fun MainView() {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .offset(
+                    x = 0.dp,
+                    y = -((((numberOfRows) / 2f) - rowsBeaten) * (rowHeight + (padding * 2.125f))- displayHeight / 2).dp
+                )
                 .padding(innerPadding)
         ) {
             // ---------- GAME AREA (TILES) ----------
@@ -179,6 +253,33 @@ fun MainView() {
                                 }
                             )
                         }
+                for (i in numberOfRows downTo 1) {
+
+                    // Row index in pattern list (0-based)
+                    val rowIndex = i - 1
+
+                    // Get column for this row from pattern.
+                    // If pattern is shorter than numberOfRows, use 1 as default.
+                    val highlightedKeyNumber = if (rowIndex < pattern.size) {
+                        pattern[rowIndex]
+                    } else {
+                        1
+                    }
+
+                    if (i == rowsBeaten + 1) {
+                        // Active row
+                        TilesRow(
+                            firstRow = true,
+                            highlightedKeyNumber = highlightedKeyNumber,
+                            onTileClick = { rowsBeaten++ } // go to next row
+                        )
+                    } else {
+                        // Inactive row
+                        TilesRow(
+                            firstRow = false,
+                            highlightedKeyNumber = highlightedKeyNumber,
+                            onTileClick = { }
+                        )
                     }
                 }
             }
@@ -286,19 +387,14 @@ fun TilesRow(
     }
 }
 
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
     RainbowTilesAppTheme {
-        MainView()
+        // Fake pattern for preview only
+        val previewPattern = List(numberOfRows) { index ->
+            (index % numberOfButtons) + 1
+        }
+        MainView(pattern = previewPattern)
     }
 }
