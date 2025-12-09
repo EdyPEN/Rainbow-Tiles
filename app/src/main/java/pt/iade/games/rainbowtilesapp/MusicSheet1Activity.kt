@@ -163,11 +163,7 @@ fun MainView(pattern: List<Int>) {
                     .padding(innerPadding)
                     .offset(
                         x = 0.dp,
-                        y = -(
-                                (((numberOfRows + 1) / 2f) - rowsBeaten) *
-                                        (rowHeight + (padding * 2.125f)) -
-                                        displayHeight / 2
-                                ).dp
+                        y = -((((numberOfRows + 1) / 2f) - rowsBeaten) * (rowHeight + (padding * 2.125f)) - displayHeight / 2).dp
                     )
             ) {
                 Column(
@@ -215,7 +211,7 @@ fun MainView(pattern: List<Int>) {
                                 firstRow = false,
                                 highlightedKeyNumber = highlightedKeyNumber,
                                 isCyan = isCyanRow,
-                                onCorrectClick = { /* not used */ },
+                                onCorrectClick = { },
                                 onWrongClick = {
                                     rowsBeaten = 0
                                     isTimerRunning = 0
@@ -260,9 +256,8 @@ fun TilesRow(
             val isCorrectTile = (i == highlightedKeyNumber)
 
             if (isCorrectTile) {
-                // Color for correct tile
                 val buttonColor: Color = if (isCyan) {
-                    Color(0xFF00FFFF) // bright cyan
+                    Color(0xFF00FFFF)
                 } else if (highlightedKeyNumber == blue) {
                     Color.Blue
                 } else if (highlightedKeyNumber == green) {
