@@ -12,7 +12,22 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.RainbowTilesApp">
         <activity
+            android:name=".MusicSheet2Activity"
+            android:exported="false"
+            android:label="@string/title_activity_music_sheet2"
+            android:theme="@style/Theme.RainbowTilesApp" />
+        <activity
+            android:name=".ListOfSheetsActivity"
+            android:exported="false"
+            android:label="@string/title_activity_list_of_sheets"
+            android:theme="@style/Theme.RainbowTilesApp" />
+        <activity
             android:name=".MainActivity"
+            android:exported="false"
+            android:label="@string/title_activity_menu"
+            android:theme="@style/Theme.RainbowTilesApp" />
+        <activity
+            android:name=".MenuActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.RainbowTilesApp">
