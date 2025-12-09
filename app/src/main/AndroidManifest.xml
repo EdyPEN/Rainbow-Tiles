@@ -11,32 +11,32 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.RainbowTilesApp">
-        <activity
-            android:name=".MusicSheet2Activity"
-            android:exported="false"
-            android:label="@string/title_activity_music_sheet2"
-            android:theme="@style/Theme.RainbowTilesApp" />
+
+        <!-- List of sheets screen -->
         <activity
             android:name=".ListOfSheetsActivity"
             android:exported="false"
             android:label="@string/title_activity_list_of_sheets"
             android:theme="@style/Theme.RainbowTilesApp" />
+
+        <!-- Game screen -->
         <activity
             android:name=".MainActivity"
             android:exported="false"
             android:label="@string/title_activity_menu"
             android:theme="@style/Theme.RainbowTilesApp" />
+
+        <!-- START screen (launcher) -->
         <activity
             android:name=".MenuActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.RainbowTilesApp">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
     </application>
 
 </manifest>
