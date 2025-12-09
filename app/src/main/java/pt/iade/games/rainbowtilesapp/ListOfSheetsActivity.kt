@@ -35,7 +35,7 @@ class ListOfSheetsActivity : ComponentActivity() {
 
 @Composable
 fun ListOfSheetsScreen() {
-    // Context for starting activities
+    // Way to get and start the current Android context inside Compose
     val context = LocalContext.current
 
     Scaffold(
@@ -49,12 +49,12 @@ fun ListOfSheetsScreen() {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             // Button for Music Sheet 1
             Button(
                 onClick = {
                     // Start game with SHEET1
                     val intent = Intent(context, MainActivity::class.java)
+                    // We specify which pattern needs to be loaded (sheet1 or sheet2).
                     intent.putExtra(MainActivity.EXTRA_SHEET_NAME, "SHEET1")
                     context.startActivity(intent)
                 },
