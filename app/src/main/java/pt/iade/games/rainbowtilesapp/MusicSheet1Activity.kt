@@ -40,28 +40,23 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import pt.iade.games.rainbowtilesapp.ui.theme.RainbowTilesAppTheme
 
-// Game config
 var numberOfRows: Int = 45
 var numberOfButtons: Int = 4
 var rowHeight: Float = 180f
 var padding: Float = 2f
 var buttonWidth: Float = 100f
 const val startingTime = 6
-
-// Colors as ints for pattern files
 const val blue: Int = 1
 const val green: Int = 2
 const val yellow: Int = 3
 const val red: Int = 4
 const val cyan: Int = 5
 
-// Enum for different sheets (file names)
 enum class MusicSheet(val fileName: String) {
     SHEET1("sheet1.txt"),
     SHEET2("sheet2.txt")
 }
 
-// Read pattern from assets (file with X/O)
 fun loadPatternFromAssets(
     context: Context,
     fileName: String,
@@ -79,16 +74,13 @@ fun loadPatternFromAssets(
             .filter { it.isNotBlank() }
 
         for (line in lines) {
-            // Each line must have exactly numberOfButtons characters
             if (line.length != numberOfButtons) continue
 
-            // Find index of 'O'
             val index = line.indexOf('O')
             if (index == -1) {
-                // no active tile in this row
                 continue
             } else {
-                val columnNumber = index + 1 // 1..numberOfButtons
+                val columnNumber = index + 1
                 pattern.add(columnNumber)
             }
         }
@@ -102,23 +94,19 @@ fun loadPatternFromAssets(
 class MainActivity : ComponentActivity() {
 
     companion object {
-        // Key for Intent extra with sheet name
         const val EXTRA_SHEET_NAME = "EXTRA_SHEET_NAME"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Get sheet name from Intent
         val sheetName = intent.getStringExtra(EXTRA_SHEET_NAME)
 
-        // Convert string to enum (default = SHEET1)
         val sheet = when (sheetName) {
             "SHEET2" -> MusicSheet.SHEET2
             else -> MusicSheet.SHEET1
         }
 
-        // Load pattern for this sheet
         val pattern = loadPatternFromAssets(
             context = this,
             fileName = sheet.fileName,
@@ -134,7 +122,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// Screen height helper
 fun getScreenHeight(context: Context): Float {
     val displayMetrics = context.resources.displayMetrics
     return displayMetrics.heightPixels / displayMetrics.density
@@ -148,9 +135,8 @@ fun MainView(pattern: List<Int>) {
     var rowsBeaten by remember { mutableIntStateOf(0) }
 
     var timeLeft by remember { mutableIntStateOf(startingTime) }
-    var isTimerRunning by remember { mutableIntStateOf(0) } // 0 = stopped, 1 = running
+    var isTimerRunning by remember { mutableIntStateOf(0) }
 
-    // Timer logic
     LaunchedEffect(isTimerRunning, timeLeft) {
         if (isTimerRunning == 1 && timeLeft > 0) {
             delay(1000L)
@@ -168,13 +154,12 @@ fun MainView(pattern: List<Int>) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
         ) {
-            // 🧱 Top part: scrolling tiles area
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
+                    .padding(innerPadding)
                     .offset(
                         x = 0.dp,
                         y = -(
@@ -240,8 +225,6 @@ fun MainView(pattern: List<Int>) {
                     }
                 }
             }
-
-            // 🕒 Bottom part: fixed timer HUD (no offset!)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -330,7 +313,6 @@ fun TilesRow(
                     ),
                     colors = ButtonDefaults.buttonColors(Color.White),
                 ) {
-                    // empty tile
                 }
             }
         }
