@@ -39,12 +39,15 @@ var numberOfRows: Int = 45
 var numberOfButtons: Int = 4
 var rowHeight: Float = 180f
 var padding: Float = 2f
-var rowsBeaten: Int = 0
 val blue: Int = 1
 val green: Int = 2
 val yellow: Int = 3
 val red: Int = 4
 
+enum class MusicSheet(val fileName: String) {
+    SHEET1("sheet1.txt"),
+    SHEET2("sheet2.txt")
+}
 fun loadPatternFromAssets(
     context: Context,
     fileName: String,
@@ -90,14 +93,29 @@ fun loadPatternFromAssets(
     return pattern
 }
 class MainActivity : ComponentActivity() {
+    // A single place where we put the constant
+    companion object {
+        const val EXTRA_SHEET_NAME = "EXTRA_SHEET_NAME"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Load pattern from sheet1.txt in assets
+        // Read sheet name from Intent
+        val sheetName = intent.getStringExtra(EXTRA_SHEET_NAME)
+
+        // Convert String to enum (default is SHEET1)
+        val sheet = when (sheetName) {
+            "SHEET2" -> MusicSheet.SHEET2
+            // "SHEET3" -> MusicSheet.SHEET3
+            else -> MusicSheet.SHEET1
+        }
+
+        // Load pattern for this sheet
         val pattern = loadPatternFromAssets(
             context = this,
-            fileName = "sheet1.txt",
-            numberOfButtons = numberOfButtons // 4
+            fileName = sheet.fileName,
+            numberOfButtons = numberOfButtons
         )
 
         enableEdgeToEdge()
