@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import pt.iade.games.rainbowtilesapp.ui.theme.RainbowTilesAppTheme
+import kotlin.time.Duration.Companion.seconds
 
 var numberOfRows: Int = 45
 var numberOfButtons: Int = 4
@@ -139,7 +140,7 @@ fun MainView(pattern: List<Int>) {
 
     LaunchedEffect(isTimerRunning, timeLeft) {
         if (isTimerRunning == 1 && timeLeft > 0) {
-            delay(1000L)
+            delay(1.seconds)
             timeLeft -= 1
 
             if (timeLeft == 0) {
