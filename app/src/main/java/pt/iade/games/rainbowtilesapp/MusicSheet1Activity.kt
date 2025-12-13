@@ -1,6 +1,7 @@
 package pt.iade.games.rainbowtilesapp
 
 import android.content.Context
+import android.content.Intent
 import java.io.IOException
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -34,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -46,12 +48,12 @@ var numberOfButtons: Int = 4
 var rowHeight: Float = 180f
 var padding: Float = 2f
 var buttonWidth: Float = 100f
-const val startingTime = 6
+const val startingTime = 10
+const val timeBonus = 3
 const val blue: Int = 1
 const val green: Int = 2
 const val yellow: Int = 3
 const val red: Int = 4
-const val cyan: Int = 5
 
 enum class MusicSheet(val fileName: String) {
     SHEET1("sheet1.txt"),
@@ -137,6 +139,7 @@ fun MainView(pattern: List<Int>) {
 
     var timeLeft by remember { mutableIntStateOf(startingTime) }
     var isTimerRunning by remember { mutableIntStateOf(0) }
+    var lost by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(isTimerRunning, timeLeft) {
         if (isTimerRunning == 1 && timeLeft > 0) {
@@ -144,9 +147,7 @@ fun MainView(pattern: List<Int>) {
             timeLeft -= 1
 
             if (timeLeft == 0) {
-                rowsBeaten = 0
-                isTimerRunning = 0
-                timeLeft = startingTime
+                lost = 1
             }
         }
     }
@@ -156,84 +157,197 @@ fun MainView(pattern: List<Int>) {
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .padding(innerPadding)
-                    .offset(
-                        x = 0.dp,
-                        y = -((((numberOfRows + 1) / 2f) - rowsBeaten) * (rowHeight + (padding * 2.125f)) - displayHeight / 2).dp
-                    )
-            ) {
-                Column(
+            if (rowsBeaten < numberOfRows && lost == 0) {
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .padding(innerPadding)
+                        .offset(
+                            x = 0.dp,
+                            y = -((((numberOfRows + 1) / 2f) - rowsBeaten) * (rowHeight + (padding * 2.125f)) - displayHeight / 2).dp
+                        )
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight(unbounded = true),
+                        verticalArrangement = Arrangement.Bottom
+                    ) {
+                        for (i in numberOfRows downTo 1) {
+                            val rowIndex = i - 1
+
+                            val highlightedKeyNumber = if (rowIndex < pattern.size) {
+                                pattern[rowIndex]
+                            } else {
+                                1
+                            }
+
+                            val timeBonusRow = i % 8 == 0
+
+                            if (i == rowsBeaten + 1) {
+                                TilesRow(
+                                    firstRow = true,
+                                    highlightedKeyNumber = highlightedKeyNumber,
+                                    timeBonusRow = timeBonusRow,
+                                    onCorrectClick = {
+                                        if (isTimerRunning == 0 && rowsBeaten == 0) {
+                                            isTimerRunning = 1
+                                            timeLeft = startingTime
+                                        }
+
+                                        if (timeBonusRow) {
+                                            timeLeft += timeBonus
+                                        }
+
+                                        rowsBeaten++
+                                    },
+                                    onWrongClick = {
+                                        lost = 1
+                                    }
+                                )
+                            } else {
+                                TilesRow(
+                                    firstRow = false,
+                                    highlightedKeyNumber = highlightedKeyNumber,
+                                    timeBonusRow = timeBonusRow,
+                                    onCorrectClick = { },
+                                    onWrongClick = {
+                                        lost = 1
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .wrapContentHeight(unbounded = true),
-                    verticalArrangement = Arrangement.Bottom
+                        .height(rowHeight.dp)
+                        .background(Color.LightGray),
+                    contentAlignment = Alignment.Center
                 ) {
-                    for (i in numberOfRows downTo 1) {
-                        val rowIndex = i - 1
-
-                        val highlightedKeyNumber = if (rowIndex < pattern.size) {
-                            pattern[rowIndex]
-                        } else {
-                            1
-                        }
-
-                        val isCyanRow = i % 8 == 0
-
-                        if (i == rowsBeaten + 1) {
-                            TilesRow(
-                                firstRow = true,
-                                highlightedKeyNumber = highlightedKeyNumber,
-                                isCyan = isCyanRow,
-                                onCorrectClick = {
-                                    if (isTimerRunning == 0 && rowsBeaten == 0) {
-                                        isTimerRunning = 1
-                                        timeLeft = startingTime
-                                    }
-
-                                    if (isCyanRow) {
-                                        timeLeft += 2
-                                    }
-
-                                    rowsBeaten++
-                                },
-                                onWrongClick = {
-                                    rowsBeaten = 0
-                                    isTimerRunning = 0
-                                    timeLeft = startingTime
-                                }
+                    Text(
+                        text = "Time left: $timeLeft",
+                        fontSize = 24.sp,
+                        color = Color.Black
+                    )
+                }
+            }
+            else {
+                isTimerRunning = 0
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight()
+                        .background(Color.White),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        if (lost == 1) {
+                            Text(
+                                text = "You Lose...",
+                                fontSize = 32.sp,
+                                color = Color.Black
                             )
-                        } else {
-                            TilesRow(
-                                firstRow = false,
-                                highlightedKeyNumber = highlightedKeyNumber,
-                                isCyan = isCyanRow,
-                                onCorrectClick = { },
-                                onWrongClick = {
-                                    rowsBeaten = 0
-                                    isTimerRunning = 0
-                                    timeLeft = startingTime
-                                }
+                            if (timeLeft == 0) {
+                                Text(
+                                    text = "Don't let the time run out!",
+                                    fontSize = 24.sp,
+                                    color = Color.Black
+                                )
+                            }
+                            else if (rowsBeaten == numberOfRows - 1) {
+                                Text(
+                                    text = "I'm so sorry...",
+                                    fontSize = 24.sp,
+                                    color = Color.Black
+                                )
+                            }
+                            else if (rowsBeaten > 0) {
+                                Text(
+                                    text = "Try pressing the highlighted tiles!",
+                                    fontSize = 24.sp,
+                                    color = Color.Black
+                                )
+                            }
+                            else {
+                                Text(
+                                    text = "Are you even trying?",
+                                    fontSize = 24.sp,
+                                    fontStyle = FontStyle.Italic,
+                                    color = Color.Black
+                                )
+                            }
+                        }
+                        else {
+                            Text(
+                                text = "You Win!",
+                                fontSize = 32.sp,
+                                color = Color.Black,
+                            )
+                            Text(
+                                text = "Time left: $timeLeft",
+                                fontSize = 24.sp,
+                                color = Color.Black,
+                                modifier = Modifier
+                                    .padding(8.dp)
+                            )
+                        }
+                        Button(
+                            onClick = {
+                                rowsBeaten = 0
+                                isTimerRunning = 0
+                                timeLeft = startingTime
+                                lost = 0
+                            },
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .width(125.dp)
+                                .height(50.dp),
+                            shape = CutCornerShape(
+                                topStart = 10f,
+                                topEnd = 10f,
+                                bottomEnd = 10f,
+                                bottomStart = 10f
+                            ),
+                            colors = ButtonDefaults.buttonColors(Color.Black),
+                        ) {
+                            Text(
+                                text = "Retry",
+                                fontSize = 24.sp,
+                                color = Color.White
+                            )
+                        }
+                        Button(
+                            onClick = {
+                                rowsBeaten = 0
+                                isTimerRunning = 0
+                                timeLeft = startingTime
+                                lost = 0
+                                // HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                            },
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .width(125.dp)
+                                .height(50.dp),
+                            shape = CutCornerShape(
+                                topStart = 10f,
+                                topEnd = 10f,
+                                bottomEnd = 10f,
+                                bottomStart = 10f
+                            ),
+                            colors = ButtonDefaults.buttonColors(Color.Black),
+                        ) {
+                            Text(
+                                text = "Menu",
+                                fontSize = 24.sp,
+                                color = Color.White
                             )
                         }
                     }
                 }
-            }
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(rowHeight.dp)
-                    .background(Color.LightGray),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Time left: $timeLeft",
-                    fontSize = 24.sp,
-                    color = Color.Black
-                )
             }
         }
     }
@@ -244,7 +358,7 @@ fun MainView(pattern: List<Int>) {
 fun TilesRow(
     firstRow: Boolean,
     highlightedKeyNumber: Int,
-    isCyan: Boolean,
+    timeBonusRow: Boolean,
     onCorrectClick: () -> Unit,
     onWrongClick: () -> Unit
 ) {
@@ -256,7 +370,7 @@ fun TilesRow(
             val isCorrectTile = (i == highlightedKeyNumber)
 
             if (isCorrectTile) {
-                val buttonColor: Color = if (isCyan) {
+                val buttonColor: Color = if (timeBonusRow) {
                     Color(0xFF00FFFF)
                 } else if (highlightedKeyNumber == blue) {
                     Color.Blue
@@ -290,8 +404,8 @@ fun TilesRow(
                     ),
                     colors = ButtonDefaults.buttonColors(buttonColor),
                 ) {
-                    if (isCyan) {
-                        Text("+2", fontSize = 20.sp, color = Color.Black)
+                    if (timeBonusRow) {
+                        Text("+$timeBonus", fontSize = 20.sp, color = Color.Black)
                     }
                 }
             } else {
