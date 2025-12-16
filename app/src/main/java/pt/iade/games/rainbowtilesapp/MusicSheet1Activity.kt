@@ -1,7 +1,8 @@
 package pt.iade.games.rainbowtilesapp
 
 import android.content.Context
-import android.content.Intent
+import android.media.AudioAttributes
+import android.media.SoundPool
 import java.io.IOException
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -26,6 +27,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -55,6 +57,7 @@ const val green: Int = 2
 const val yellow: Int = 3
 const val red: Int = 4
 
+private
 enum class MusicSheet(val fileName: String) {
     SHEET1("sheet1.txt"),
     SHEET2("sheet2.txt")
@@ -129,11 +132,72 @@ fun getScreenHeight(context: Context): Float {
     val displayMetrics = context.resources.displayMetrics
     return displayMetrics.heightPixels / displayMetrics.density
 }
+@Composable
+fun rememberNoteSounds(): (Int) -> Unit {
+    val context = LocalContext.current
+
+    var soundPool: SoundPool? = remember { null }
+    var blueId by remember { mutableIntStateOf(0) }
+    var greenId by remember { mutableIntStateOf(0) }
+    var yellowId by remember { mutableIntStateOf(0) }
+    var redId by remember { mutableIntStateOf(0) }
+
+    DisposableEffect(Unit) {
+        val audioAttributes = AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_GAME)
+            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+            .build()
+
+        val pool = SoundPool.Builder()
+            .setMaxStreams(6)
+            .setAudioAttributes(audioAttributes)
+            .build()
+
+        soundPool = pool
+
+        blueId = pool.load(context, R.raw.blue_note, 1)
+        greenId = pool.load(context, R.raw.green_note, 1)
+        yellowId = pool.load(context, R.raw.yellow_note, 1)
+        redId = pool.load(context, R.raw.red_note, 1)
+
+        onDispose {
+            pool.release()
+            soundPool = null
+        }
+    }
+
+    return remember {
+        { noteColumn: Int ->
+            val pool = soundPool
+            if (pool == null) {
+                return@remember
+            }
+
+            var idToPlay = 0
+            if (noteColumn == blue) {
+                idToPlay = blueId
+            } else if (noteColumn == green) {
+                idToPlay = greenId
+            } else if (noteColumn == yellow) {
+                idToPlay = yellowId
+            } else if (noteColumn == red) {
+                idToPlay = redId
+            }
+
+            if (idToPlay != 0) {
+                pool.play(idToPlay, 1f, 1f, 1, 0, 1f)
+            }
+        }
+    }
+}
+
 
 @Composable
 fun MainView(pattern: List<Int>) {
     val context = LocalContext.current
     val displayHeight = getScreenHeight(context)
+
+    val playNote = rememberNoteSounds()
 
     var rowsBeaten by remember { mutableIntStateOf(0) }
 
@@ -200,6 +264,8 @@ fun MainView(pattern: List<Int>) {
                                         if (timeBonusRow) {
                                             timeLeft += timeBonus
                                         }
+
+                                        playNote(highlightedKeyNumber)
 
                                         rowsBeaten++
                                     },
