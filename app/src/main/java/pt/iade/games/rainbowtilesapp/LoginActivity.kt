@@ -195,6 +195,6 @@ fun saveLoggedInUser(context: Context, userId: Int, userName: String) {
     val prefs = context.getSharedPreferences("auth", Context.MODE_PRIVATE)
     prefs.edit {
         putInt("user_id", userId)
-            .putString("user_name", userName)
+        putString("user_name", userName)
     }
 }

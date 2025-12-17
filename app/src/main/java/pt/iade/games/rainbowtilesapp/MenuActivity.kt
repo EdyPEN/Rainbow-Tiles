@@ -29,38 +29,56 @@ class MenuActivity : ComponentActivity() {
         setContent {
             RainbowTilesAppTheme {
                 val context = LocalContext.current
+                val prefs = context.getSharedPreferences("auth", android.content.Context.MODE_PRIVATE)
+                val userName = prefs.getString("user_name", "") ?: ""
+                val userId = prefs.getInt("user_id", -1)
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Column (
+                    Column(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(innerPadding)
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.Center,
+                            .padding(40.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
-                    )
-                    { Button(
-                        onClick = {
-                            val intent = Intent(context, ListOfSheetsActivity::class.java)
-                            startActivity(intent)
-                            context.startActivity(intent)
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp)
-                        )   {
-                                Text("List")
+                    ) {
+
+                        // Push content down a bit so it's closer to center
+//                        Spacer(modifier = Modifier.weight(0.8f))
+
+                        if (userName.isNotBlank() && userId != -1) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(text = "Welcome, $userName!")
+                                Text(text = "your ID: $userId")
                             }
-                    }
-                    Button(
-                        onClick = {
-                            // Open login screen
-                            val intent = Intent(context, LoginActivity::class.java)
-                            context.startActivity(intent)
+
+//                            Spacer(modifier = Modifier.padding(12.dp))
                         }
-                    )   {
+
+                        Button(
+                            onClick = {
+                                val intent = Intent(context, ListOfSheetsActivity::class.java)
+                                context.startActivity(intent)
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 40.dp)
+                        ) {
+                            Text("List of Music Sheets")
+                        }
+
+                        Button(
+                            onClick = {
+                                val intent = Intent(context, LoginActivity::class.java)
+                                context.startActivity(intent)
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp)
+                        ) {
                             Text("Login Rainbow Strings")
                         }
 
+
+                    }
                 }
             }
         }
