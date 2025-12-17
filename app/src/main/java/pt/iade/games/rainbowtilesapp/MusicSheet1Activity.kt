@@ -43,6 +43,7 @@ import kotlinx.coroutines.delay
 import pt.iade.games.rainbowtilesapp.ui.theme.RainbowTilesAppTheme
 import kotlin.time.Duration.Companion.seconds
 
+
 var numberOfRows: Int = 45
 var numberOfButtons: Int = 4
 var rowHeight: Float = 180f
@@ -326,7 +327,10 @@ fun MainView(pattern: List<Int>) {
                                 isTimerRunning = 0
                                 timeLeft = startingTime
                                 lost = 0
-                                // HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                                val intent = Intent(context, ListOfSheetsActivity::class.java)
+                                context.startActivity(intent)
+                                // Close current activity so Back doesn't return to game-over screen
+                                (context as? ComponentActivity)?.finish()
                             },
                             modifier = Modifier
                                 .padding(8.dp)
@@ -341,7 +345,7 @@ fun MainView(pattern: List<Int>) {
                             colors = ButtonDefaults.buttonColors(Color.Black),
                         ) {
                             Text(
-                                text = "Menu",
+                                text = "List",
                                 fontSize = 24.sp,
                                 color = Color.White
                             )

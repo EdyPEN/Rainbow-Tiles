@@ -37,7 +37,8 @@ class MenuActivity : ComponentActivity() {
                             .padding(16.dp),
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
-                    ) { Button(
+                    )
+                    { Button(
                         onClick = {
                             val intent = Intent(context, ListOfSheetsActivity::class.java)
                             startActivity(intent)
@@ -46,10 +47,20 @@ class MenuActivity : ComponentActivity() {
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp)
+                        )   {
+                                Text("List")
+                            }
+                    }
+                    Button(
+                        onClick = {
+                            // Open login screen
+                            val intent = Intent(context, LoginActivity::class.java)
+                            context.startActivity(intent)
+                        }
                     )   {
-                        Text("List")
-                    }
-                    }
+                            Text("Login Rainbow Strings")
+                        }
+
                 }
             }
         }

@@ -79,6 +79,21 @@ fun ListOfSheetsScreen() {
             ) {
                 Text(text = "Music Sheet 2")
             }
+
+            Button(
+                onClick = {
+                    // Close this screen and return to previous one (in this case -> MenuActivity)
+                    val intent = Intent(context, MenuActivity::class.java)
+                    context.startActivity(intent)
+                    (context as? ComponentActivity)?.finish()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 40.dp)
+            ) {
+                Text(text = "Back To the Menu")
+            }
+
         }
     }
 }
